@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Text sizes -->
+    <dimen name="text_status">18sp</dimen>
+    <dimen name="text_button_large">24sp</dimen>
+    <dimen name="text_button_medium">20sp</dimen>
+    <dimen name="text_button_small">18sp</dimen>
+    <dimen name="text_toggle">16sp</dimen>
+
+    <!-- Heights -->
+    <dimen name="height_key">80dp</dimen>
+    <dimen name="height_arrow">80dp</dimen>
+    <dimen name="height_mouse_button">60dp</dimen>
+    <dimen name="height_trackpad">200dp</dimen>
+</resources>

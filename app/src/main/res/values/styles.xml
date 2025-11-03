@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Rounded BottomSheet dialog overlay -->
+    <style name="RoundedBottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <!-- Extra padding and rounded shape are provided by Material; tweak if needed -->
+    </style>
+</resources>

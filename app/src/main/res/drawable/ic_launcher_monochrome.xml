@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024"
+    android:tint="?attr/colorControlNormal">
+
+    <!-- Monochrome keypad dots only (no background). Use alpha to create discernible tiers -->
+
+    <!-- Row 1 -->
+    <path android:fillColor="#000000" android:fillAlpha="1.0" android:pathData="M320,310a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#000000" android:fillAlpha="1.0" android:pathData="M470,310a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#000000" android:fillAlpha="1.0" android:pathData="M620,310a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+
+    <!-- Row 2 -->
+    <path android:fillColor="#000000" android:fillAlpha="1.0" android:pathData="M320,438a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <!-- Center highlight (strongest to stand out) -->
+    <path android:fillColor="#000000" android:fillAlpha="0.3" android:pathData="M470,438a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#000000" android:fillAlpha="1.0" android:pathData="M620,438a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+
+    <!-- Row 3 -->
+    <path android:fillColor="#000000" android:fillAlpha="1.0" android:pathData="M320,566a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#000000" android:fillAlpha="1.0" android:pathData="M470,566a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#000000" android:fillAlpha="1.0" android:pathData="M620,566a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+
+    <!-- Row 4 (backspace, 0, enter) with medium emphasis to be discernible as a set) -->
+    <path android:fillColor="#000000" android:fillAlpha="0.3" android:pathData="M320,694a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#000000" android:fillAlpha="1.0" android:pathData="M470,694a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#000000" android:fillAlpha="0.3" android:pathData="M620,694a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+
+    <!-- Outline ring around highlighted keys for extra separation in themed mode -->
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="4"
+        android:strokeAlpha="1.0"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M470,438a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="4"
+        android:strokeAlpha="1.0"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M320,694a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="4"
+        android:strokeAlpha="1.0"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M620,694a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+
+</vector>

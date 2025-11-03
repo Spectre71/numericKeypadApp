@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Numeric Keypad</string>
+    <string name="menu_button_desc">Open menu</string>
+</resources>

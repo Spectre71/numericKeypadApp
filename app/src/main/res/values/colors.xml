@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- utility colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="connect_btn">#4CAF50</color>
+<!-- launcher icon colors -->
+    <color name="ic_launcher_background">#3DDC84</color>
+<!-- trackpad colors -->
+    <color name="trackpad_button">#6443DC</color>
+    <color name="trackpad_color_static">#2A34EB</color>
+    <color name="trackpad_color_1">#B074E8</color>
+    <color name="trackpad_color_2">#0E7EB5</color>
+    <color name="trackpad_color_3">#641FDB</color>
+<!-- mouse button colors -->
+    <color name="mouse_button">#9C27B0</color>
+<!-- keyboard colors -->
+    <color name="updn_Button">#FF9800</color>
+    <color name="backspace_button">#FF5722</color>
+    <color name="enter_button">#257D29</color>
+<!-- keypad button colors -->
+    <color name="keypad_button">#3F51B5</color>
+    <color name="the_5_key">#5a6bcc</color>
+<!-- status box color -->
+    <color name="status_box">#2D2D2D</color>
+<!-- close trackpad button color -->
+    <color name="close_trackpad_button">#424242</color>
+<!-- divider color -->
+    <color name="divider">#6E27C4</color>
+<!-- app base background (used to match nav bar color) -->
+    <color name="app_background">#1E1E1E</color>
+    <color name="app_bg_transparent">#00000000</color>
+</resources>

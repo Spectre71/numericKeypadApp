@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+
+    <!-- Background: deep indigo gradient -->
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M256,56C136.47,56 56,136.47 56,256v512c0,119.53 80.47,200 200,200h512c119.53,0 200,-80.47 200,-200V256c0,-119.53 -80.47,-200 -200,-200H256z"/>
+
+    <!-- Outer subtle outline -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeAlpha="0.06"
+        android:strokeWidth="2"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M256,56C136.47,56 56,136.47 56,256v512c0,119.53 80.47,200 200,200h512c119.53,0 200,-80.47 200,-200V256c0,-119.53 -80.47,-200 -200,-200H256z"/>
+
+    <!-- Keypad circles: clean minimalist grid -->
+    <!-- Layout math: grid centered, 3 cols × 4 rows -->
+    <!-- Circle radius = 44, spacing = 128 -->
+
+    <!-- Row 1 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M320,310a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M470,310a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M620,310a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+
+    <!-- Row 2 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M320,438a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <!-- Center highlight (gold key “5”) -->
+    <path android:fillColor="#5a6bcc" android:pathData="M470,438a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M620,438a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+
+    <!-- Row 3 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M320,566a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M470,566a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M620,566a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+
+    <!-- Row 4 -->
+    <path android:fillColor="#FF5722" android:pathData="M320,694a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M470,694a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+    <path android:fillColor="#257D29" android:pathData="M620,694a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+
+    <!-- Optional gold border ring on center key for sophistication -->
+    <path
+        android:strokeColor="#4c63e7ff"
+        android:strokeWidth="4"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M470,438a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+
+    <!-- Subtle drop shadow for all keys (group simulation) -->
+    <path
+        android:fillColor="#000000"
+        android:fillAlpha="0.08"
+        android:pathData="M320,318a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z M512,318a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z M682,318a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z M342,446a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z M512,446a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z M682,446a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z M342,574a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z M512,574a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z M682,574a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z M342,702a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z M512,702a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z M682,702a44,44 0 1,0 88,0a44,44 0 1,0 -88,0z"/>
+</vector>
