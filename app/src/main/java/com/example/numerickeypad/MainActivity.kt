@@ -110,7 +110,17 @@ class MainActivity : AppCompatActivity() {
         languageToggleButton?.setOnClickListener { toggleLanguage() }
         menuButton.setOnClickListener { showFlyoutMenu() }
         connectButton.setOnClickListener {
-            if (isHidReady() && hidService.isConnected()) {
+            // If HID isn't ready yet, (re)register it first so the button never feels unresponsive
+            if (!isHidReady() || !hidService.isReady()) {
+                if (this::hidService.isInitialized) {
+                    hidService.ensureRegistered()
+                } else {
+                    ensurePermissionsThenInit()
+                }
+                Toast.makeText(this, Translator.t("Registering HID…"), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (hidService.isConnected()) {
                 hidService.disconnect()
                 updateStatus("Disconnected")
             } else {
@@ -131,6 +141,32 @@ class MainActivity : AppCompatActivity() {
         applyTranslations()
         // Refresh connect button/status labels according to current state
         updateStatus(lastStatusMessage)
+        // Ensure HID stays registered after returning to foreground
+        if (this::hidService.isInitialized) {
+            // Clear background timestamp; we are foreground now
+            hidService.lastBackgroundTimestamp = 0L
+            hidService.ensureRegistered()
+            // Attempt silent reconnect to last known device if user didn't explicitly disconnect
+            hidService.attemptAutoReconnect()
+        } else {
+            ensurePermissionsThenInit()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Record when we went to background for adaptive auto-reconnect timing
+        if (this::hidService.isInitialized) {
+            hidService.lastBackgroundTimestamp = System.currentTimeMillis()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Also stamp timestamp here to cover cases where onPause wasn't reached (defensive)
+        if (this::hidService.isInitialized) {
+            hidService.lastBackgroundTimestamp = System.currentTimeMillis()
+        }
     }
 
     private fun showFlyoutMenu() {
@@ -293,8 +329,8 @@ class MainActivity : AppCompatActivity() {
             val ready = isHidReady() && hidService.isReady()
             val connected = if (ready) hidService.isConnected() else false
             connectButton.text = Translator.t(if (connected) "Disconnect" else "Connect HID Device")
-            // Disable Connect button until HID is registered to avoid confusing failures
-            connectButton.isEnabled = ready || connected
+            // Keep button enabled even if not ready; clicking will re-register automatically
+            connectButton.isEnabled = true
         }
     }
 

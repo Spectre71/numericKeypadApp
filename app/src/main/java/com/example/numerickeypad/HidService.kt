@@ -26,9 +26,17 @@ class HidService(private val context: Context) {
     private var lastTargetDevice: BluetoothDevice? = null
     private var connectRetryCount: Int = 0
     private var connectTimeoutRunnable: Runnable? = null
+    // Persist explicit user disconnect state so auto-reconnect does not occur after they choose to disconnect.
+    @Volatile private var userRequestedDisconnect: Boolean = false
     private val executor = Executors.newSingleThreadExecutor()
     private val handler = Handler(Looper.getMainLooper())
     @Volatile private var registered = false
+    // Track if an auto-reconnect is pending (e.g. scheduled after a delay) so we don't spam connects
+    @Volatile private var pendingAutoReconnect: Boolean = false
+    // Timestamp of when app went to background (set externally by activity if desired)
+    @Volatile var lastBackgroundTimestamp: Long = 0L
+    // Allow a slightly more robust staged backoff for long background gaps
+    private var autoReconnectAttemptCount: Int = 0
 
     interface Listener {
         fun onStatus(message: String)
@@ -196,6 +204,10 @@ class HidService(private val context: Context) {
             if (registered) {
                 Log.d(TAG, "HID Device registered successfully")
                 listener?.onStatus("HID registered. Ready to connect.")
+                // If an auto-reconnect was pending while we were unregistered, trigger it now
+                if (pendingAutoReconnect) {
+                    handler.postDelayed({ attemptAutoReconnect(force = true) }, 300)
+                }
             } else {
                 Log.d(TAG, "HID Device unregistered")
                 listener?.onStatus("HID unregistered")
@@ -212,6 +224,8 @@ class HidService(private val context: Context) {
                     connectRetryCount = 0
                     // Cancel any pending connect timeout
                     connectTimeoutRunnable?.let { handler.removeCallbacks(it) }
+                    // Clear manual disconnect flag – a fresh user connection re-enables auto reconnect
+                    userRequestedDisconnect = false
                     val deviceName = try {
                         if (hasBtConnectPerm()) device?.name ?: "device" else "device"
                     } catch (se: SecurityException) {
@@ -246,6 +260,10 @@ class HidService(private val context: Context) {
                     // Lightweight auto-retry: some hosts reject the first attempt right after pairing
                     // Only retry if we still have a target (user didn't explicitly disconnect)
                     lastTargetDevice?.let { target ->
+                        if (userRequestedDisconnect) {
+                            Log.d(TAG, "Auto-reconnect suppressed: user requested disconnect")
+                            return@let
+                        }
                         if (connectRetryCount < 2) {
                             val backoffMs = if (connectRetryCount == 0) 1200L else 3000L
                             connectRetryCount += 1
@@ -281,6 +299,16 @@ class HidService(private val context: Context) {
             connectedDevice = null
             connectTimeoutRunnable?.let { handler.removeCallbacks(it) }
             listener?.onStatus("Virtual cable unplugged by host")
+            // Attempt reconnect if user did not explicitly disconnect
+            if (!userRequestedDisconnect && lastTargetDevice != null && hasBtConnectPerm()) {
+                handler.postDelayed({
+                    try {
+                        hidDevice?.connect(lastTargetDevice)
+                    } catch (se: SecurityException) {
+                        Log.e(TAG, "reconnect after virtual cable unplug SecurityException: ${se.message}")
+                    }
+                }, 1500)
+            }
         }
         
         override fun onGetReport(device: BluetoothDevice?, type: Byte, id: Byte, bufferSize: Int) {
@@ -315,7 +343,14 @@ class HidService(private val context: Context) {
         override fun onServiceDisconnected(profile: Int) {
             Log.d(TAG, "Proxy disconnected for HID Device profile")
             if (profile == BluetoothProfile.HID_DEVICE) {
+                // Mark as not ready and try to rebind the profile proxy so we can re-register shortly.
                 hidDevice = null
+                registered = false
+                bluetoothAdapter?.getProfileProxy(
+                    context,
+                    this, // rebind using this ServiceListener instance to avoid self-reference to property during init
+                    BluetoothProfile.HID_DEVICE
+                )
             }
         }
     }
@@ -364,7 +399,7 @@ class HidService(private val context: Context) {
                 Log.w(TAG, "registerApp skipped: BLUETOOTH_CONNECT permission not granted")
                 return@execute
             }
-            val registered = try {
+            val regOk = try {
                 hidDevice?.registerApp(
                     sdp,
                     inQos,
@@ -376,7 +411,27 @@ class HidService(private val context: Context) {
                 Log.e(TAG, "registerApp SecurityException: ${se.message}")
                 false
             }
-            Log.d(TAG, "registerApp result: $registered")
+            Log.d(TAG, "registerApp result: $regOk")
+        }
+    }
+
+    /**
+     * Ensure the HID profile is registered and ready after lifecycle changes.
+     * If the proxy is missing, rebinds it; if not registered, registers the app.
+     */
+    fun ensureRegistered() {
+        if (hidDevice == null) {
+            val ok = bluetoothAdapter?.getProfileProxy(context, profileListener, BluetoothProfile.HID_DEVICE) ?: false
+            Log.d(TAG, "ensureRegistered: getProfileProxy -> $ok")
+            return
+        }
+        if (!registered) {
+            Log.d(TAG, "ensureRegistered: re-registering HID app")
+            registerHidDevice()
+            // If we were waiting to auto-reconnect and HID just became registered, attempt now
+            if (pendingAutoReconnect) {
+                handler.postDelayed({ attemptAutoReconnect(force = true) }, 400)
+            }
         }
     }
     
@@ -565,6 +620,7 @@ class HidService(private val context: Context) {
             return
         }
         // Clear target device to prevent auto-reconnect on user-initiated disconnect
+        userRequestedDisconnect = true
         lastTargetDevice = null
         connectRetryCount = 0
         connectTimeoutRunnable?.let { handler.removeCallbacks(it) }
@@ -608,6 +664,7 @@ class HidService(private val context: Context) {
         }
         // Remember target for optional auto-retry flow
         lastTargetDevice = device
+        userRequestedDisconnect = false
         connectRetryCount = 0
         val result = try {
             hidDevice?.connect(device) ?: false
@@ -638,5 +695,88 @@ class HidService(private val context: Context) {
             handler.postDelayed(connectTimeoutRunnable!!, 10000)
         }
         return result
+    }
+
+    /**
+     * Attempt a silent auto-reconnect to the last target device if conditions permit.
+     * Called from activity lifecycle (e.g., onResume) after ensureRegistered().
+     */
+    /**
+     * Attempt a silent auto-reconnect to the last target device if conditions permit.
+     * Enhancements:
+     *  - Will defer if HID not yet registered (sets pending flag)
+     *  - Adds staged backoff for long-background cases (>5s, >30s) to avoid host throttling
+     *  - force=true ignores pendingAutoReconnect gating (used right after registration)
+     */
+    fun attemptAutoReconnect(force: Boolean = false) {
+        if (userRequestedDisconnect) {
+            Log.d(TAG, "attemptAutoReconnect: suppressed due to userRequestedDisconnect")
+            return
+        }
+        val target = lastTargetDevice ?: run {
+            Log.d(TAG, "attemptAutoReconnect: no lastTargetDevice")
+            return
+        }
+        if (connectedDevice != null) {
+            Log.d(TAG, "attemptAutoReconnect: already connected; abort")
+            return
+        }
+        if (!hasBtConnectPerm()) {
+            Log.d(TAG, "attemptAutoReconnect: missing BLUETOOTH_CONNECT permission")
+            return
+        }
+
+        if (!registered) {
+            // Defer until ensureRegistered finishes
+            pendingAutoReconnect = true
+            Log.d(TAG, "attemptAutoReconnect: HID not registered yet; deferring")
+            return
+        }
+
+        if (pendingAutoReconnect && !force) {
+            Log.d(TAG, "attemptAutoReconnect: already pending; skip duplicate")
+            return
+        }
+
+        pendingAutoReconnect = false
+
+        // Determine how long we've been in background to adjust backoff
+        val now = System.currentTimeMillis()
+        val backgroundDelta = if (lastBackgroundTimestamp > 0) now - lastBackgroundTimestamp else 0L
+        val delayMs = when {
+            backgroundDelta > 30_000L -> 2500L // longer pause, give host stack time
+            backgroundDelta > 5_000L -> 1500L // moderate pause
+            else -> 400L // quick resume
+        }
+
+        // Additional staged attempts: we schedule up to 2 follow-ups if first doesn't yield connection state change
+        autoReconnectAttemptCount = 0
+        fun scheduleAttempt() {
+            val attemptIndex = autoReconnectAttemptCount
+            autoReconnectAttemptCount += 1
+            val attemptDelay = if (attemptIndex == 0) delayMs else if (attemptIndex == 1) delayMs + 2000L else delayMs + 5000L
+            Log.d(TAG, "attemptAutoReconnect: scheduling attempt #${attemptIndex+1} in ${attemptDelay}ms (bgDelta=${backgroundDelta}ms)")
+            handler.postDelayed({
+                if (connectedDevice != null || userRequestedDisconnect || lastTargetDevice == null) {
+                    Log.d(TAG, "attemptAutoReconnect: abort attempt #${attemptIndex+1} (connected or no target)")
+                    return@postDelayed
+                }
+                try {
+                    val safeAddr = try { target.address } catch (_: SecurityException) { "device" }
+                    Log.d(TAG, "attemptAutoReconnect: connect(${safeAddr}) attempt #${attemptIndex+1}")
+                    hidDevice?.connect(target)
+                    if (attemptIndex == 0) {
+                        listener?.onStatus("Reconnecting to ${try { target.name } catch (_:SecurityException){"device"}}…")
+                    }
+                } catch (se: SecurityException) {
+                    Log.e(TAG, "attemptAutoReconnect connect SecurityException: ${se.message}")
+                }
+                // If still not connected and attempts remain, chain next
+                if (connectedDevice == null && autoReconnectAttemptCount < 3 && !userRequestedDisconnect) {
+                    scheduleAttempt()
+                }
+            }, attemptDelay)
+        }
+        scheduleAttempt()
     }
 }
