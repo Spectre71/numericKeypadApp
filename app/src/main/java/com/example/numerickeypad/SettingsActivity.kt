@@ -22,9 +22,12 @@ class SettingsActivity : AppCompatActivity() {
 
         // Match system bars to app background in Settings as well
         val appBg = ContextCompat.getColor(this, R.color.app_background)
+        @Suppress("DEPRECATION")
         window.navigationBarColor = appBg
+        @Suppress("DEPRECATION")
         window.statusBarColor = appBg
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            @Suppress("DEPRECATION")
             window.navigationBarDividerColor = Color.TRANSPARENT
         }
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
@@ -46,7 +49,7 @@ class SettingsActivity : AppCompatActivity() {
     findViewById<TextView>(R.id.settingsTitle)?.text = Translator.t("Interface")
     findViewById<TextView>(R.id.languageLabel)?.text = Translator.t("Language:")
     findViewById<TextView>(R.id.aboutTitle)?.text = Translator.t("About")
-        updateLanguageButtonLabel(btn)
+    updateLanguageButtonLabel(btn)
 
         btn.setOnClickListener {
             val newLang = if (Translator.getLanguage() == Language.SL) Language.EN else Language.SL

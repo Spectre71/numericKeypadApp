@@ -14,7 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="150px"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:clipToPadding="false">
 
         <!-- VerticalStackLayout equivalent -->
         <LinearLayout
@@ -47,7 +48,7 @@
                         android:layout_marginEnd="4dp"
                         android:contentDescription="Menu"
                         android:background="@android:color/transparent"
-                        android:tint="#FFFFFF"
+                        app:tint="#FFFFFF"
                         android:src="@drawable/menu" />
                 </LinearLayout>
 

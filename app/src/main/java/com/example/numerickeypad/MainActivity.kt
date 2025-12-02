@@ -20,6 +20,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import android.provider.Settings
 import android.content.SharedPreferences
 import kotlin.math.roundToInt
@@ -35,8 +37,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var trackpadToggleButton: Button
     private lateinit var trackpadOverlay: View
     private lateinit var numLockButton: Button
-    private var languageToggleButton: Button? = null
     private lateinit var menuButton: View
+
+    private val enableBluetoothLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            ensurePermissionsThenInit()
+        } else {
+            Toast.makeText(this, Translator.t("Bluetooth is required"), Toast.LENGTH_LONG).show()
+            updateStatus("Bluetooth required")
+        }
+    }
     
     private var bluetoothAdapter: BluetoothAdapter? = null
     
@@ -63,14 +75,24 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Handle window insets to prevent content from hiding behind the navigation bar
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.scrollArea)) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, bars.bottom)
+            insets
+        }
+
         // Ensure no action bar is shown (defensive in case theme changes)
         supportActionBar?.hide()
 
         // Match system bars to app background
         val appBg = ContextCompat.getColor(this, R.color.app_background)
+        @Suppress("DEPRECATION")
         window.navigationBarColor = appBg
+        @Suppress("DEPRECATION")
         window.statusBarColor = appBg
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            @Suppress("DEPRECATION")
             window.navigationBarDividerColor = Color.TRANSPARENT
         }
         // Ensure light icons are NOT requested on dark background
@@ -93,21 +115,18 @@ class MainActivity : AppCompatActivity() {
         trackpadToggleButton = findViewById(R.id.trackpadToggleButton)
         trackpadOverlay = findViewById(R.id.trackpadOverlay)
         numLockButton = findViewById(R.id.numLockButton)
-        languageToggleButton = findViewById(R.id.languageToggleButton)
         menuButton = findViewById(R.id.menuButton)
 
         // Load preferred language and apply
         val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
         val savedLang = prefs.getString("lang", "EN")
         Translator.setLanguage(if (savedLang == "SL") Language.SL else Language.EN)
-        updateLanguageButtonLabel()
 
         // Wire up UI handlers
         setupKeypadButtons()
         setupTrackpad()
         setupTrackpadToggle()
         numLockButton.setOnClickListener { sendKey(HidService.KEY_NUM_LOCK) }
-        languageToggleButton?.setOnClickListener { toggleLanguage() }
         menuButton.setOnClickListener { showFlyoutMenu() }
         connectButton.setOnClickListener {
             // If HID isn't ready yet, (re)register it first so the button never feels unresponsive
@@ -196,11 +215,14 @@ class MainActivity : AppCompatActivity() {
         val mgr = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = mgr.adapter
 
-        if (bluetoothAdapter?.isEnabled != true) {
-            startActivityForResult(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), REQ_ENABLE_BT)
+        if (bluetoothAdapter == null) {
+            Toast.makeText(this, Translator.t("Bluetooth not supported"), Toast.LENGTH_LONG).show()
+            updateStatus("Bluetooth not supported")
             return
         }
 
+        // On Android 12+ (S), we must have BLUETOOTH_CONNECT permission before we can even
+        // check if Bluetooth is enabled or request to enable it.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val need = mutableListOf<String>()
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
@@ -216,9 +238,11 @@ class MainActivity : AppCompatActivity() {
                 ActivityCompat.requestPermissions(this, need.toTypedArray(), REQ_PERMS_BT_12PLUS)
                 return
             }
-        } else {
-            // Android 11 and below: No runtime Bluetooth permissions required for our use-case
-            // (we only connect to bonded devices and do not scan), so proceed.
+        }
+
+        if (bluetoothAdapter?.isEnabled != true) {
+            enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+            return
         }
 
         // All good → proceed with HID service init (existing code)
@@ -515,21 +539,6 @@ class MainActivity : AppCompatActivity() {
 
         // Status and Connect button will be set by updateStatus; translate current visible text
         statusText.text = Translator.t(statusText.text.toString())
-        updateLanguageButtonLabel()
-    }
-
-    private fun toggleLanguage() {
-        val newLang = if (Translator.getLanguage() == Language.SL) Language.EN else Language.SL
-        Translator.setLanguage(newLang)
-        getSharedPreferences("app_prefs", MODE_PRIVATE)
-            .edit().putString("lang", if (newLang == Language.SL) "SL" else "EN").apply()
-        applyTranslations()
-        // Re-evaluate connect button label based on state
-        updateStatus(statusText.text.toString())
-    }
-
-    private fun updateLanguageButtonLabel() {
-        languageToggleButton?.text = if (Translator.getLanguage() == Language.SL) "English" else "Slovenščina"
     }
 
     private fun sendKey(keyCode: Byte) {
@@ -558,13 +567,6 @@ class MainActivity : AppCompatActivity() {
                     statusText.text = Translator.t("Permissions required to continue")
                 }
             }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQ_ENABLE_BT) {
-            ensurePermissionsThenInit()
         }
     }
 
