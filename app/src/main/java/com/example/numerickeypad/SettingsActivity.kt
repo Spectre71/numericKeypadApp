@@ -12,20 +12,24 @@ import android.view.View
 import android.view.WindowInsetsController
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 
 class SettingsActivity : AppCompatActivity() {
     private val GITHUB_URL = "https://github.com/Spectre71/numericKeypadApp"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Edge-to-edge: allow app content behind system bars.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContentView(R.layout.activity_settings)
         supportActionBar?.hide()
 
-        // Match system bars to app background in Settings as well
-        val appBg = ContextCompat.getColor(this, R.color.app_background)
+        // Make system bars transparent and keep icons visible over dark UI.
         @Suppress("DEPRECATION")
-        window.navigationBarColor = appBg
+        window.navigationBarColor = Color.TRANSPARENT
         @Suppress("DEPRECATION")
-        window.statusBarColor = appBg
+        window.statusBarColor = Color.TRANSPARENT
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
             @Suppress("DEPRECATION")
             window.navigationBarDividerColor = Color.TRANSPARENT
@@ -40,7 +44,9 @@ class SettingsActivity : AppCompatActivity() {
         } else {
             @Suppress("DEPRECATION")
             window.decorView.systemUiVisibility =
-                window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                window.decorView.systemUiVisibility and
+                        View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv() and
+                        View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
         }
 
         // Wire up language toggle in Settings screen

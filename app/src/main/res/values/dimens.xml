@@ -7,9 +7,16 @@
     <dimen name="text_button_small">18sp</dimen>
     <dimen name="text_toggle">16sp</dimen>
 
+    <!-- Spacing -->
+    <dimen name="spacing_section">12dp</dimen>
+
+    <!-- Sizes -->
+    <dimen name="size_menu_button">40dp</dimen>
+
     <!-- Heights -->
     <dimen name="height_key">80dp</dimen>
     <dimen name="height_arrow">80dp</dimen>
     <dimen name="height_mouse_button">60dp</dimen>
-    <dimen name="height_trackpad">200dp</dimen>
+    <dimen name="height_toggle">52dp</dimen>
+    <dimen name="height_trackpad_surface">300dp</dimen>
 </resources>

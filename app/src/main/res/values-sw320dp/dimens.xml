@@ -11,5 +11,10 @@
     <dimen name="height_key">72dp</dimen>
     <dimen name="height_arrow">72dp</dimen>
     <dimen name="height_mouse_button">52dp</dimen>
-    <dimen name="height_trackpad">180dp</dimen>
+
+    <dimen name="spacing_section">8dp</dimen>
+    <dimen name="size_menu_button">36dp</dimen>
+
+    <dimen name="height_toggle">48dp</dimen>
+    <dimen name="height_trackpad_surface">240dp</dimen>
 </resources>

@@ -4,10 +4,11 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
-import android.graphics.Color
 import android.view.WindowInsetsController
 import android.os.Bundle
 import android.view.MotionEvent
@@ -21,8 +22,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import android.provider.Settings
+import android.graphics.Color
+import com.google.android.material.R as MaterialR
 import android.content.SharedPreferences
 import kotlin.math.roundToInt
 import com.example.numerickeypad.Translator
@@ -51,6 +55,39 @@ class MainActivity : AppCompatActivity() {
     }
     
     private var bluetoothAdapter: BluetoothAdapter? = null
+
+    // Track a device the user explicitly selected so we can continue after bonding completes.
+    private var pendingConnectAddress: String? = null
+
+    private var btReceiverRegistered: Boolean = false
+    private val btReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            val action = intent?.action ?: return
+            when (action) {
+                BluetoothDevice.ACTION_BOND_STATE_CHANGED -> {
+                    val device: BluetoothDevice? = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                    val bondState = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR)
+                    if (device != null && bondState == BluetoothDevice.BOND_BONDED) {
+                        val addr = try { device.address } catch (_: SecurityException) { null }
+                        if (addr != null && (pendingConnectAddress == null || pendingConnectAddress == addr)) {
+                            pendingConnectAddress = null
+                            if (this@MainActivity::hidService.isInitialized) {
+                                hidService.connect(device)
+                                updateStatus("Connecting…")
+                            }
+                        }
+                    }
+                }
+                BluetoothAdapter.ACTION_STATE_CHANGED -> {
+                    val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
+                    when (state) {
+                        BluetoothAdapter.STATE_OFF -> updateStatus("Bluetooth is off")
+                        BluetoothAdapter.STATE_ON -> ensurePermissionsThenInit()
+                    }
+                }
+            }
+        }
+    }
     
     // Trackpad state
     private var lastTouchX = 0f
@@ -73,24 +110,27 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Edge-to-edge: allow app content behind system bars.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContentView(R.layout.activity_main)
 
         // Handle window insets to prevent content from hiding behind the navigation bar
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.scrollArea)) { v, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, bars.bottom)
+            v.setPadding(v.paddingLeft, bars.top, v.paddingRight, bars.bottom)
             insets
         }
 
         // Ensure no action bar is shown (defensive in case theme changes)
         supportActionBar?.hide()
 
-        // Match system bars to app background
-        val appBg = ContextCompat.getColor(this, R.color.app_background)
+        // Make system bars transparent and keep icons visible over dark UI.
         @Suppress("DEPRECATION")
-        window.navigationBarColor = appBg
+        window.navigationBarColor = Color.TRANSPARENT
         @Suppress("DEPRECATION")
-        window.statusBarColor = appBg
+        window.statusBarColor = Color.TRANSPARENT
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             @Suppress("DEPRECATION")
             window.navigationBarDividerColor = Color.TRANSPARENT
@@ -106,7 +146,9 @@ class MainActivity : AppCompatActivity() {
         } else {
             @Suppress("DEPRECATION")
             window.decorView.systemUiVisibility =
-                window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                window.decorView.systemUiVisibility and
+                        View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv() and
+                        View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
         }
 
         // Initialize views
@@ -172,11 +214,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        // Record when we went to background for adaptive auto-reconnect timing
-        if (this::hidService.isInitialized) {
-            hidService.lastBackgroundTimestamp = System.currentTimeMillis()
+    override fun onStart() {
+        super.onStart()
+        if (!btReceiverRegistered) {
+            val filter = IntentFilter().apply {
+                addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+                addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+            }
+            registerReceiver(btReceiver, filter)
+            btReceiverRegistered = true
         }
     }
 
@@ -186,12 +232,55 @@ class MainActivity : AppCompatActivity() {
         if (this::hidService.isInitialized) {
             hidService.lastBackgroundTimestamp = System.currentTimeMillis()
         }
+        if (btReceiverRegistered) {
+            unregisterReceiver(btReceiver)
+            btReceiverRegistered = false
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Record when we went to background for adaptive auto-reconnect timing
+        if (this::hidService.isInitialized) {
+            hidService.lastBackgroundTimestamp = System.currentTimeMillis()
+        }
     }
 
     private fun showFlyoutMenu() {
         val dialog = BottomSheetDialog(this, R.style.RoundedBottomSheetDialog)
         val view = layoutInflater.inflate(R.layout.menu_bottom_sheet, null)
         dialog.setContentView(view)
+
+        dialog.setOnShowListener {
+            dialog.findViewById<android.widget.FrameLayout>(MaterialR.id.design_bottom_sheet)
+                ?.setBackgroundColor(Color.TRANSPARENT)
+
+            dialog.window?.let { w ->
+                @Suppress("DEPRECATION")
+                w.navigationBarColor = Color.TRANSPARENT
+                @Suppress("DEPRECATION")
+                w.statusBarColor = Color.TRANSPARENT
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    @Suppress("DEPRECATION")
+                    w.navigationBarDividerColor = Color.TRANSPARENT
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    w.insetsController?.setSystemBarsAppearance(
+                        /* appearance = */ 0,
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
+                                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    w.decorView.systemUiVisibility =
+                        w.decorView.systemUiVisibility and
+                                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv() and
+                                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+                }
+            }
+        }
+
         view.findViewById<Button>(R.id.menuNumpad)?.apply {
             text = Translator.t("Numpad")
             setOnClickListener {
@@ -269,9 +358,21 @@ class MainActivity : AppCompatActivity() {
         val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE).apply {
             putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300)
         }
+
+        // Android 11 and below: no runtime BLUETOOTH_ADVERTISE permission exists; allow the system dialog.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            startActivity(discoverableIntent)
+            Toast.makeText(this, Translator.t("Device is now discoverable"), Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // Android 12+: require BLUETOOTH_ADVERTISE
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED) {
             startActivity(discoverableIntent)
             Toast.makeText(this, Translator.t("Device is now discoverable"), Toast.LENGTH_LONG).show()
+        } else {
+            requestBluetoothPermissions()
+            Toast.makeText(this, Translator.t("Bluetooth permission required"), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -329,6 +430,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun connectToDevice(device: BluetoothDevice) {
+        // Remember the user's explicit choice so we can continue automatically after pairing/bonding events.
+        pendingConnectAddress = try { device.address } catch (_: SecurityException) { null }
         if (hidService.connect(device)) {
             val name = if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
                 device.name

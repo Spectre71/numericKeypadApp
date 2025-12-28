@@ -2,6 +2,10 @@
 <resources>
     <!-- Rounded BottomSheet dialog overlay -->
     <style name="RoundedBottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
-        <!-- Extra padding and rounded shape are provided by Material; tweak if needed -->
+        <item name="bottomSheetStyle">@style/TransparentBottomSheet</item>
+    </style>
+
+    <style name="TransparentBottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
     </style>
 </resources>
