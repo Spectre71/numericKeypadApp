@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Smaller text sizes for compact screens -->
+    <dimen name="text_status">17sp</dimen>
+    <dimen name="text_button_large">22sp</dimen>
+    <dimen name="text_button_medium">20sp</dimen>
+    <dimen name="text_button_small">18sp</dimen>
+    <dimen name="text_toggle">16sp</dimen>
+
+    <!-- Reduced heights for compact screens -->
+    <dimen name="height_key">77dp</dimen>
+    <dimen name="height_arrow">74dp</dimen>
+    <dimen name="height_mouse_button">54dp</dimen>
+
+    <dimen name="spacing_section">10dp</dimen>
+    <dimen name="size_menu_button">38dp</dimen>
+
+    <dimen name="height_toggle">50dp</dimen>
+    <dimen name="height_trackpad_surface">280dp</dimen>
+</resources>
