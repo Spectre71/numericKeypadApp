@@ -35,6 +35,64 @@ A Bluetooth HID (Human Interface Device) application that turns your Android dev
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
+### Release builds (installable APK) and signing
+
+Android requires APKs to be **signed** to install them (e.g., when opening the APK from a file manager). Debug builds are automatically signed with the default debug key, but a release APK must also be signed.
+
+#### 1) Build a release APK
+
+```bash
+./gradlew :app:assembleRelease
+```
+
+Output:
+- `app/build/outputs/apk/release/app-release.apk`
+
+#### 2) Recommended: sign with your own release key (for sharing)
+
+If you plan to distribute the APK to other people, generate your own keystore once and keep it safe.
+
+1) Generate a keystore (one-time):
+
+```bash
+keytool -genkeypair -v \
+   -keystore release.jks \
+   -alias numerickeypad \
+   -keyalg RSA -keysize 2048 \
+   -validity 10000
+```
+
+2) Create `keystore.properties` in the repository root (do not commit it):
+
+```bash
+cp keystore.properties.example keystore.properties
+```
+
+Edit `keystore.properties` and set:
+
+```properties
+storeFile=release.jks
+storePassword=YOUR_PASSWORD
+keyAlias=numerickeypad
+keyPassword=YOUR_PASSWORD
+```
+
+3) Build the signed release APK:
+
+```bash
+./gradlew :app:assembleRelease
+```
+
+#### Notes
+
+- Do **not** lose `release.jks` or its passwords. Android requires the same signing key for all future updates of the same app ID.
+- `keystore.properties` is ignored by git on purpose (it contains secrets).
+- For Play Store distribution, you typically build an App Bundle instead:
+
+```bash
+./gradlew :app:bundleRelease
+```
+
 **Note:** If you get SDK-related errors, see `SDK_SETUP.md` for complete setup instructions.
 
 ### 2. Set Up the Connection
