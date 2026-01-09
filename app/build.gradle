@@ -3,6 +3,12 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace 'com.example.numerickeypad'
     compileSdk 36
@@ -15,10 +21,28 @@ android {
         versionName "1.0"
     }
 
+    signingConfigs {
+        // Loaded from keystore.properties (kept out of git)
+        release {
+            if (keystorePropertiesFile.exists()) {
+                // Resolve relative to repository root (not the :app module dir)
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            // A release APK must be signed to be installable from the device.
+            // If keystore.properties is present, use your private release key.
+            // Otherwise fall back to the debug signing key so you can still build/share APKs.
+            signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
         }
     }
     
