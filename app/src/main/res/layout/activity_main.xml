@@ -261,6 +261,22 @@
                         android:background="@drawable/bg_btn_enter"/>
                 </GridLayout>
 
+                <Button
+                    android:id="@+id/escButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="@dimen/height_toggle"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:text="ESC"
+                    android:textSize="@dimen/text_toggle"
+                    android:backgroundTint="@null"
+                    app:backgroundTint="@null"
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/bg_btn_esc"/>
+
                 <!-- Up/Down Arrows and Trackpad Toggle Grid -->
                 <GridLayout
                     android:id="@+id/updnmsGrid"
@@ -334,7 +350,7 @@
                         android:textSize="@dimen/text_toggle"
                         android:backgroundTint="@null"
                         app:backgroundTint="@null"
-                        android:textColor="@android:color/white"
+                        android:textColor="@android:color/black"
                         android:background="@drawable/bg_btn_numlock"/>
                 </GridLayout>
             </LinearLayout>

@@ -21,6 +21,8 @@
 <!-- keypad button colors -->
     <color name="keypad_button">#3F51B5</color>
     <color name="the_5_key">#5a6bcc</color>
+    <color name="numlock_button">#ffd900</color>
+    <color name="esc_button">#d42222</color>
 <!-- status box color -->
     <color name="status_box">#2D2D2D</color>
 <!-- close trackpad button color -->

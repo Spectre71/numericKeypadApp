@@ -29,6 +29,7 @@ fun translateTextToSlovenian(text: String): String {
         "Disconnected" to "Povezava prekinjena",
         "TRACKPAD" to "MIŠKA",
         "NUM LOCK" to "NUM LOCK",
+        "ESC" to "ESC",
         "▲ UP" to "▲ GOR",
         "▼ DOWN" to "▼ DOL",
         "TRACKPAD MODE" to "MIŠKA",

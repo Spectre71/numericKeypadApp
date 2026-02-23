@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var trackpadToggleButton: Button
     private lateinit var trackpadOverlay: View
     private lateinit var numLockButton: Button
+    private lateinit var escButton: Button
     private lateinit var menuButton: View
 
     private val enableBluetoothLauncher = registerForActivityResult(
@@ -157,6 +158,7 @@ class MainActivity : AppCompatActivity() {
         trackpadToggleButton = findViewById(R.id.trackpadToggleButton)
         trackpadOverlay = findViewById(R.id.trackpadOverlay)
         numLockButton = findViewById(R.id.numLockButton)
+        escButton = findViewById(R.id.escButton)
         menuButton = findViewById(R.id.menuButton)
 
         // Load preferred language and apply
@@ -169,6 +171,7 @@ class MainActivity : AppCompatActivity() {
         setupTrackpad()
         setupTrackpadToggle()
         numLockButton.setOnClickListener { sendKey(HidService.KEY_NUM_LOCK) }
+        escButton.setOnClickListener { sendKey(HidService.KEY_ESC) }
         menuButton.setOnClickListener { showFlyoutMenu() }
         connectButton.setOnClickListener {
             // If HID isn't ready yet, (re)register it first so the button never feels unresponsive
@@ -623,6 +626,7 @@ class MainActivity : AppCompatActivity() {
 
         // Num Lock button should follow the same enabled state so its text color dims
         numLockButton.isEnabled = enabled
+        escButton.isEnabled = enabled
         
         // Connect and trackpad toggle buttons
         connectButton.isEnabled = enabled
@@ -635,6 +639,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.arrowDownButton).text = Translator.t("▼ DOWN")
         trackpadToggleButton.text = Translator.t("TRACKPAD")
         numLockButton.text = Translator.t("NUM LOCK")
+        escButton.text = Translator.t("ESC")
         findViewById<TextView>(R.id.trackpadHeader).text = Translator.t("TRACKPAD MODE")
         findViewById<Button>(R.id.mouseLeftClick).text = Translator.t("LEFT")
         findViewById<Button>(R.id.mouseRightClick).text = Translator.t("RIGHT")
