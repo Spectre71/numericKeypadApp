@@ -24,7 +24,7 @@ fun translateTextToSlovenian(text: String): String {
     // Exact translations for common UI strings
     val exact = mapOf(
         // Buttons and labels
-        "Connect HID Device" to "Poveži HID napravo",
+        "Connect HID Device" to "Poveži napravo",
         "Disconnect" to "Prekini povezavo",
         "Disconnected" to "Povezava prekinjena",
         "TRACKPAD" to "MIŠKA",
@@ -35,7 +35,7 @@ fun translateTextToSlovenian(text: String): String {
         "TRACKPAD MODE" to "MIŠKA",
         "LEFT" to "LEVI",
         "RIGHT" to "DESNI",
-        "Close Trackpad" to "Zapri miško",
+        "Close Trackpad" to "Zapri",
         // Status / messages
         "Not connected" to "Ni povezave",
         "Failed to connect" to "Povezava ni uspela",
@@ -46,10 +46,10 @@ fun translateTextToSlovenian(text: String): String {
         "Pair your computer with this phone first in Bluetooth settings, then try again." to "Najprej seznanite računalnik s telefonom v nastavitvah Bluetooth, nato poskusite znova.",
         "Open Settings" to "Odpri nastavitve",
         "Cancel" to "Prekliči",
-        "HID Device registered successfully" to "HID naprava je bila uspešno registrirana",
-        "HID registered. Ready to connect." to "HID registrirana. Pripravljeno za povezavo.",
-        "HID Device unregistered" to "HID naprava ni več povezana",
-        "HID unregistered" to "HID ni registrirana",
+        "HID Device registered successfully" to "Naprava je bila uspešno registrirana",
+        "HID registered. Ready to connect." to "Naprava registrirana. Pripravljeno za povezavo.",
+        "HID Device unregistered" to "Naprava ni več povezana",
+        "HID unregistered" to "Naprava ni registrirana",
         "Ensure Num Lock is ON on the host!" to "Preverite, da je Num Lock na računalniku vklopljen!",
         "ready" to "pripravljeno",
         "not-ready" to "ni pripravljeno",
@@ -57,11 +57,23 @@ fun translateTextToSlovenian(text: String): String {
         "disconnected" to "brez povezave",
         "Settings" to "Nastavitve",
         "Language:" to "Jezik:",
+        "Select language" to "Izberi jezik",
+        "Handedness:" to "Postavitev:",
+        "Select handedness" to "Izberi postavitev",
+        "Left-handed" to "Levičar",
+        "Right-handed" to "Desničar",
         "Numpad" to "Številčnica",
         "Cannot send, please connect device" to "Pošiljanje ni mogoče, prosim povežite napravo",
         "Language updated" to "Jezik posodobljen",
+        "Handedness updated" to "Postavitev posodobljena",
         "About" to "Informacije",
-        "Interface" to "Vmesnik"
+        "Interface" to "Vmesnik",
+        "Theme:" to "Tema:",
+        "Select theme" to "Izberi temo",
+        "Theme updated" to "Tema posodobljena",
+        "Default" to "Privzeto",
+        "2-Tone" to "2-Tonsko",
+        "Professional" to "Profesionalno"
     )
 
     exact[text]?.let { return it }

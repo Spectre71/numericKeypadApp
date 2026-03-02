@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
+import android.content.res.ColorStateList
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
@@ -14,9 +15,9 @@ import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
+import android.widget.GridLayout
 import android.widget.TextView
 import android.widget.Toast
-import android.widget.Switch
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -27,13 +28,14 @@ import androidx.core.view.WindowInsetsCompat
 import android.provider.Settings
 import android.graphics.Color
 import com.google.android.material.R as MaterialR
-import android.content.SharedPreferences
 import kotlin.math.roundToInt
 import com.example.numerickeypad.Translator
 import com.example.numerickeypad.Language
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class MainActivity : AppCompatActivity() {
+
+    private val prefs by lazy { getSharedPreferences(PREFS_NAME, MODE_PRIVATE) }
 
     private lateinit var hidService: HidService
     private lateinit var statusText: TextView
@@ -105,6 +107,8 @@ class MainActivity : AppCompatActivity() {
     private val REQ_ENABLE_BT = 1003
 
     companion object {
+        private const val PREFS_NAME = "app_prefs"
+        private const val PREF_LEFT_HANDED_MODE = "left_handed_mode"
         private const val REQUEST_ENABLE_BT = 1
         private const val REQUEST_BLUETOOTH_PERMISSIONS = 2
     }
@@ -160,6 +164,8 @@ class MainActivity : AppCompatActivity() {
         numLockButton = findViewById(R.id.numLockButton)
         escButton = findViewById(R.id.escButton)
         menuButton = findViewById(R.id.menuButton)
+        applyThemeToUi()
+        applyHandednessLayouts()
 
         // Load preferred language and apply
         val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
@@ -195,6 +201,7 @@ class MainActivity : AppCompatActivity() {
         // Ensure permissions (pre-12: Location; 12+: Bluetooth runtime), then init HID
         ensurePermissionsThenInit()
         applyTranslations()
+        applyHandednessLayouts()
     }
 
     override fun onResume() {
@@ -202,7 +209,9 @@ class MainActivity : AppCompatActivity() {
         // Re-apply language preference in case it was changed in Settings
         val savedLang = getSharedPreferences("app_prefs", MODE_PRIVATE).getString("lang", "EN")
         Translator.setLanguage(if (savedLang == "SL") Language.SL else Language.EN)
+        applyThemeToUi()
         applyTranslations()
+        applyHandednessLayouts()
         // Refresh connect button/status labels according to current state
         updateStatus(lastStatusMessage)
         // Ensure HID stays registered after returning to foreground
@@ -661,6 +670,126 @@ class MainActivity : AppCompatActivity() {
             // Toast.makeText(this, Translator.t("Cannot send ($ready / $conn)"), Toast.LENGTH_SHORT).show()
             Toast.makeText(this, Translator.t("Cannot send, please connect device"), Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun applyThemeToUi() {
+        val palette = AppThemeManager.getPalette(AppThemeManager.getTheme(this))
+
+        findViewById<View>(android.R.id.content)?.setBackgroundColor(palette.appBackground)
+        statusText.setTextColor(palette.statusText)
+
+        findViewById<View>(R.id.dividerTop)?.setBackgroundColor(palette.divider_accent)
+        findViewById<View>(R.id.dividerMiddle)?.setBackgroundColor(palette.divider_accent)
+
+        connectButton.backgroundTintList = ColorStateList.valueOf(palette.connectButton)
+        escButton.backgroundTintList = ColorStateList.valueOf(palette.escButton)
+        numLockButton.backgroundTintList = ColorStateList.valueOf(palette.numLockButton)
+        trackpadToggleButton.backgroundTintList = ColorStateList.valueOf(palette.trackpadButton)
+
+        listOf(
+            R.id.key0, R.id.key1, R.id.key2, R.id.key3, R.id.key4,
+            R.id.key6, R.id.key7, R.id.key8, R.id.key9
+        ).forEach { id ->
+            findViewById<Button>(id)?.backgroundTintList = ColorStateList.valueOf(palette.keypadButton)
+        }
+
+        findViewById<Button>(R.id.key5)?.backgroundTintList = ColorStateList.valueOf(palette.key5Button)
+        findViewById<Button>(R.id.keyReturn)?.backgroundTintList = ColorStateList.valueOf(palette.enterButton)
+        findViewById<Button>(R.id.keyBackspace)?.backgroundTintList = ColorStateList.valueOf(palette.backspaceButton)
+        findViewById<Button>(R.id.arrowUpButton)?.backgroundTintList = ColorStateList.valueOf(palette.upDownButton)
+        findViewById<Button>(R.id.arrowDownButton)?.backgroundTintList = ColorStateList.valueOf(palette.upDownButton)
+
+        findViewById<Button>(R.id.mouseLeftClick)?.backgroundTintList = ColorStateList.valueOf(palette.mouseButton)
+        findViewById<Button>(R.id.mouseRightClick)?.backgroundTintList = ColorStateList.valueOf(palette.mouseButton)
+        findViewById<Button>(R.id.closeTrackpadButton)?.backgroundTintList = ColorStateList.valueOf(palette.closeTrackpadButton)
+        findViewById<View>(R.id.trackpadSurface)?.setBackgroundResource(palette.trackpadSurfaceDrawable)
+    }
+
+    private fun applyHandednessLayouts() {
+        if (!this::connectButton.isInitialized || !this::escButton.isInitialized) return
+
+        val isLeftHanded = prefs.getBoolean(PREF_LEFT_HANDED_MODE, false)
+
+        val connectParams = (connectButton.layoutParams as? GridLayout.LayoutParams)
+            ?: GridLayout.LayoutParams()
+        val escParams = (escButton.layoutParams as? GridLayout.LayoutParams)
+            ?: GridLayout.LayoutParams()
+        val upButton = findViewById<Button>(R.id.arrowUpButton)
+        val downButton = findViewById<Button>(R.id.arrowDownButton)
+        val key0Button = findViewById<Button>(R.id.key0)
+        val keyReturnButton = findViewById<Button>(R.id.keyReturn)
+        val keyBackspaceButton = findViewById<Button>(R.id.keyBackspace)
+
+        val upParams = (upButton.layoutParams as? GridLayout.LayoutParams)
+            ?: GridLayout.LayoutParams()
+        val downParams = (downButton.layoutParams as? GridLayout.LayoutParams)
+            ?: GridLayout.LayoutParams()
+        val trackpadParams = (trackpadToggleButton.layoutParams as? GridLayout.LayoutParams)
+            ?: GridLayout.LayoutParams()
+        val numLockParams = (numLockButton.layoutParams as? GridLayout.LayoutParams)
+            ?: GridLayout.LayoutParams()
+        val key0Params = (key0Button.layoutParams as? GridLayout.LayoutParams)
+            ?: GridLayout.LayoutParams()
+        val keyReturnParams = (keyReturnButton.layoutParams as? GridLayout.LayoutParams)
+            ?: GridLayout.LayoutParams()
+        val keyBackspaceParams = (keyBackspaceButton.layoutParams as? GridLayout.LayoutParams)
+            ?: GridLayout.LayoutParams()
+
+        connectParams.rowSpec = GridLayout.spec(0)
+        escParams.rowSpec = GridLayout.spec(0)
+        upParams.rowSpec = GridLayout.spec(0)
+        downParams.rowSpec = GridLayout.spec(0)
+        numLockParams.rowSpec = GridLayout.spec(1)
+        trackpadParams.rowSpec = GridLayout.spec(1)
+        keyBackspaceParams.rowSpec = GridLayout.spec(3)
+        key0Params.rowSpec = GridLayout.spec(3)
+        keyReturnParams.rowSpec = GridLayout.spec(3)
+
+        key0Params.columnSpec = GridLayout.spec(1, 1, 1f)
+
+        if (isLeftHanded) {
+            connectParams.columnSpec = GridLayout.spec(0, 2, 2f)
+            escParams.columnSpec = GridLayout.spec(2, 1, 1f)
+
+            upParams.columnSpec = GridLayout.spec(1, 1, 1f)
+            downParams.columnSpec = GridLayout.spec(0, 1, 1f)
+            trackpadParams.columnSpec = GridLayout.spec(0, 1, 1f)
+            numLockParams.columnSpec = GridLayout.spec(1, 1, 1f)
+
+            keyReturnParams.columnSpec = GridLayout.spec(0, 1, 1f)
+            keyBackspaceParams.columnSpec = GridLayout.spec(2, 1, 1f)
+        } else {
+            escParams.columnSpec = GridLayout.spec(0, 1, 1f)
+            connectParams.columnSpec = GridLayout.spec(1, 2, 2f)
+
+            upParams.columnSpec = GridLayout.spec(0, 1, 1f)
+            downParams.columnSpec = GridLayout.spec(1, 1, 1f)
+            numLockParams.columnSpec = GridLayout.spec(0, 1, 1f)
+            trackpadParams.columnSpec = GridLayout.spec(1, 1, 1f)
+
+            keyBackspaceParams.columnSpec = GridLayout.spec(0, 1, 1f)
+            keyReturnParams.columnSpec = GridLayout.spec(2, 1, 1f)
+        }
+
+        connectParams.width = 0
+        escParams.width = 0
+        upParams.width = 0
+        downParams.width = 0
+        numLockParams.width = 0
+        trackpadParams.width = 0
+        keyBackspaceParams.width = 0
+        key0Params.width = 0
+        keyReturnParams.width = 0
+
+        connectButton.layoutParams = connectParams
+        escButton.layoutParams = escParams
+        upButton.layoutParams = upParams
+        downButton.layoutParams = downParams
+        numLockButton.layoutParams = numLockParams
+        trackpadToggleButton.layoutParams = trackpadParams
+        keyBackspaceButton.layoutParams = keyBackspaceParams
+        key0Button.layoutParams = key0Params
+        keyReturnButton.layoutParams = keyReturnParams
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

@@ -63,19 +63,51 @@
                     android:paddingTop="12dp"
                     android:paddingBottom="12dp"/>
 
-                <!-- Connect Button -->
-                <Button
-                    android:id="@+id/connectButton"
+                <!-- Connect Button + ESC -->
+                <GridLayout
+                    android:id="@+id/connectButtonGrid"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:text="Connect HID Device"
-                    android:textSize="16sp"
-                    android:padding="12dp"
-                    android:backgroundTint="@null"
-                    app:backgroundTint="@null"
-                    android:textColor="@android:color/white"
-                    android:background="@drawable/bg_btn_connect"/>
+                    android:columnCount="3"
+                    android:rowCount="1"
+                    android:alignmentMode="alignBounds"
+                    android:layout_marginBottom="@dimen/spacing_section"
+                    android:columnOrderPreserved="false">
+                    <Button
+                        android:id="@+id/connectButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="4dp"
+                        android:text="Connect HID Device"
+                        android:textSize="@dimen/text_toggle"
+                        android:padding="12dp"
+                        android:layout_columnWeight="2"
+                        android:backgroundTint="@null"
+                        app:backgroundTint="@null"
+                        android:textColor="@android:color/white"
+                        android:background="@drawable/bg_btn_connect"/>
+                    
+                    <Button
+                        android:id="@+id/escButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="4dp"
+                        android:text="ESC"
+                        android:padding="12dp"
+                        android:layout_columnWeight="1"
+                        android:textSize="@dimen/text_toggle"
+                        android:backgroundTint="@null"
+                        app:backgroundTint="@null"
+                        android:textColor="@android:color/white"
+                        android:background="@drawable/bg_btn_esc"/>
+                    
+                </GridLayout>
+                <View
+                    android:id="@+id/dividerTop"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/divider_accent"
+                    android:layout_margin="4dp"/>
 
                 <!-- Keypad Grid -->
                 <GridLayout
@@ -83,6 +115,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_section"
+                    android:layout_marginBottom="@dimen/spacing_section"
                     android:columnCount="3"
                     android:rowCount="4"
                     android:alignmentMode="alignBounds"
@@ -260,22 +293,13 @@
                         android:textColor="@android:color/white"
                         android:background="@drawable/bg_btn_enter"/>
                 </GridLayout>
-
-                <Button
-                    android:id="@+id/escButton"
+                <View
+                    android:id="@+id/dividerMiddle"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="@dimen/height_toggle"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginBottom="4dp"
-                    android:text="ESC"
-                    android:textSize="@dimen/text_toggle"
-                    android:backgroundTint="@null"
-                    app:backgroundTint="@null"
-                    android:textColor="@android:color/white"
-                    android:background="@drawable/bg_btn_esc"/>
+                    android:layout_height="1dp"
+                    android:background="@color/divider_accent"
+                    android:layout_margin="4dp"
+                    />
 
                 <!-- Up/Down Arrows and Trackpad Toggle Grid -->
                 <GridLayout
@@ -325,13 +349,12 @@
                         android:id="@+id/trackpadToggleButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:minHeight="@dimen/height_toggle"
+                        android:minHeight="@dimen/height_key"
                         android:layout_columnSpan="1"
                         android:layout_columnWeight="1"
                         android:layout_margin="4dp"
                         android:text="TRACKPAD"
-                        android:textSize="@dimen/text_toggle"
-                        android:layout_marginTop="8dp"
+                        android:textSize="@dimen/text_button_medium"
                         android:backgroundTint="@null"
                         app:backgroundTint="@null"
                         android:textColor="@android:color/white"
@@ -342,15 +365,15 @@
                         android:id="@+id/numLockButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:minHeight="@dimen/height_toggle"
+                        android:minHeight="@dimen/height_key"
                         android:layout_columnSpan="1"
                         android:layout_columnWeight="1"
                         android:layout_margin="4dp"
                         android:text="NUM LOCK"
-                        android:textSize="@dimen/text_toggle"
+                        android:textSize="@dimen/text_button_medium"
                         android:backgroundTint="@null"
                         app:backgroundTint="@null"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:background="@drawable/bg_btn_numlock"/>
                 </GridLayout>
             </LinearLayout>

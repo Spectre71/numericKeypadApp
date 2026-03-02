@@ -34,6 +34,7 @@
                 android:paddingBottom="12dp"/>
 
             <View
+                android:id="@+id/dividerSettingsHeader"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@color/divider"
@@ -75,6 +76,102 @@
                 android:layout_marginStart="16dp"/>
 
         </LinearLayout>
+        <View
+            android:id="@+id/dividerAfterLanguage"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_accent"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/themeLabel"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Theme:"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"/>
+
+            <Button
+                android:id="@+id/themeSelectButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Default"
+                android:textSize="16sp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:backgroundTint="@null"
+                app:backgroundTint="@null"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_btn_keypad"
+                android:layout_marginStart="16dp"/>
+
+        </LinearLayout>
+        <View
+            android:id="@+id/dividerAfterTheme"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_accent"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"/>
+
+        <!-- SECTION 2b: Handedness Selector -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/handednessLabel"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Handedness:"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"/>
+
+            <Button
+                android:id="@+id/handednessToggleButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Right-handed"
+                android:textSize="16sp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:backgroundTint="@null"
+                app:backgroundTint="@null"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_btn_keypad"
+                android:layout_marginStart="16dp"/>
+
+        </LinearLayout>
+        <View
+            android:id="@+id/dividerAfterHandedness"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_accent"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"/>
 
         <!-- SECTION 3: About -->
         <LinearLayout
@@ -96,6 +193,7 @@
                 android:paddingBottom="12dp"/>
 
             <View
+                android:id="@+id/dividerAboutHeader"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@color/divider"

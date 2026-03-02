@@ -9,7 +9,7 @@
 
     <!-- Reduced heights for compact screens -->
     <dimen name="height_key">77dp</dimen>
-    <dimen name="height_arrow">74dp</dimen>
+    <dimen name="height_arrow">77dp</dimen>
     <dimen name="height_mouse_button">54dp</dimen>
 
     <dimen name="spacing_section">10dp</dimen>
