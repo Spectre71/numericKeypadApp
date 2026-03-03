@@ -81,6 +81,7 @@ keyPassword=YOUR_PASSWORD
 
 ```bash
 ./gradlew :app:assembleRelease
+adb install app/build/outputs/apk/release/app-release.apk
 ```
 
 #### Notes

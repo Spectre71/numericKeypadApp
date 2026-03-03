@@ -230,7 +230,25 @@ class SettingsActivity : AppCompatActivity() {
             R.id.handednessToggleButton,
             R.id.themeSelectButton
         ).forEach { id ->
-            findViewById<Button>(id)?.backgroundTintList = ColorStateList.valueOf(palette.keypadButton)
+            findViewById<Button>(id)?.backgroundTintList = createPressStateTint(palette.keypadButton)
         }
+    }
+
+    private fun createPressStateTint(normalColor: Int): ColorStateList {
+        val pressedColor = darken(normalColor, 0.18f)
+        return ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_pressed),
+                intArrayOf()
+            ),
+            intArrayOf(pressedColor, normalColor)
+        )
+    }
+
+    private fun darken(color: Int, factor: Float): Int {
+        val r = (Color.red(color) * (1f - factor)).toInt().coerceIn(0, 255)
+        val g = (Color.green(color) * (1f - factor)).toInt().coerceIn(0, 255)
+        val b = (Color.blue(color) * (1f - factor)).toInt().coerceIn(0, 255)
+        return Color.argb(Color.alpha(color), r, g, b)
     }
 }

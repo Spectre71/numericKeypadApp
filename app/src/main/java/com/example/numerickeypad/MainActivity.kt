@@ -681,28 +681,46 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.dividerTop)?.setBackgroundColor(palette.divider_accent)
         findViewById<View>(R.id.dividerMiddle)?.setBackgroundColor(palette.divider_accent)
 
-        connectButton.backgroundTintList = ColorStateList.valueOf(palette.connectButton)
-        escButton.backgroundTintList = ColorStateList.valueOf(palette.escButton)
-        numLockButton.backgroundTintList = ColorStateList.valueOf(palette.numLockButton)
-        trackpadToggleButton.backgroundTintList = ColorStateList.valueOf(palette.trackpadButton)
+        connectButton.backgroundTintList = createPressStateTint(palette.connectButton)
+        escButton.backgroundTintList = createPressStateTint(palette.escButton)
+        numLockButton.backgroundTintList = createPressStateTint(palette.numLockButton)
+        trackpadToggleButton.backgroundTintList = createPressStateTint(palette.trackpadButton)
 
         listOf(
             R.id.key0, R.id.key1, R.id.key2, R.id.key3, R.id.key4,
             R.id.key6, R.id.key7, R.id.key8, R.id.key9
         ).forEach { id ->
-            findViewById<Button>(id)?.backgroundTintList = ColorStateList.valueOf(palette.keypadButton)
+            findViewById<Button>(id)?.backgroundTintList = createPressStateTint(palette.keypadButton)
         }
 
-        findViewById<Button>(R.id.key5)?.backgroundTintList = ColorStateList.valueOf(palette.key5Button)
-        findViewById<Button>(R.id.keyReturn)?.backgroundTintList = ColorStateList.valueOf(palette.enterButton)
-        findViewById<Button>(R.id.keyBackspace)?.backgroundTintList = ColorStateList.valueOf(palette.backspaceButton)
-        findViewById<Button>(R.id.arrowUpButton)?.backgroundTintList = ColorStateList.valueOf(palette.upDownButton)
-        findViewById<Button>(R.id.arrowDownButton)?.backgroundTintList = ColorStateList.valueOf(palette.upDownButton)
+        findViewById<Button>(R.id.key5)?.backgroundTintList = createPressStateTint(palette.key5Button)
+        findViewById<Button>(R.id.keyReturn)?.backgroundTintList = createPressStateTint(palette.enterButton)
+        findViewById<Button>(R.id.keyBackspace)?.backgroundTintList = createPressStateTint(palette.backspaceButton)
+        findViewById<Button>(R.id.arrowUpButton)?.backgroundTintList = createPressStateTint(palette.upDownButton)
+        findViewById<Button>(R.id.arrowDownButton)?.backgroundTintList = createPressStateTint(palette.upDownButton)
 
-        findViewById<Button>(R.id.mouseLeftClick)?.backgroundTintList = ColorStateList.valueOf(palette.mouseButton)
-        findViewById<Button>(R.id.mouseRightClick)?.backgroundTintList = ColorStateList.valueOf(palette.mouseButton)
-        findViewById<Button>(R.id.closeTrackpadButton)?.backgroundTintList = ColorStateList.valueOf(palette.closeTrackpadButton)
+        findViewById<Button>(R.id.mouseLeftClick)?.backgroundTintList = createPressStateTint(palette.mouseButton)
+        findViewById<Button>(R.id.mouseRightClick)?.backgroundTintList = createPressStateTint(palette.mouseButton)
+        findViewById<Button>(R.id.closeTrackpadButton)?.backgroundTintList = createPressStateTint(palette.closeTrackpadButton)
         findViewById<View>(R.id.trackpadSurface)?.setBackgroundResource(palette.trackpadSurfaceDrawable)
+    }
+
+    private fun createPressStateTint(normalColor: Int): ColorStateList {
+        val pressedColor = darken(normalColor, 0.18f)
+        return ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_pressed),
+                intArrayOf()
+            ),
+            intArrayOf(pressedColor, normalColor)
+        )
+    }
+
+    private fun darken(color: Int, factor: Float): Int {
+        val r = (Color.red(color) * (1f - factor)).toInt().coerceIn(0, 255)
+        val g = (Color.green(color) * (1f - factor)).toInt().coerceIn(0, 255)
+        val b = (Color.blue(color) * (1f - factor)).toInt().coerceIn(0, 255)
+        return Color.argb(Color.alpha(color), r, g, b)
     }
 
     private fun applyHandednessLayouts() {
